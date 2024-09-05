@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -10,28 +9,35 @@ import {
   Container,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-// import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Firebase/firebase";
 import picture from "../assets/outdoor.jpg";
-import { loginUser } from "../Redux/authSlice";
 
 const LogIn = () => {
+  
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { loading, error } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogIn = (e) => {
+  const handleLogIn = async (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password })).then((result) => {
-      if (result.meta.requestStatus === "fulfilled") {
-        alert("Logged in successfully");
-        navigate("/Home");
-      } else if (result.meta.requestStatus === "rejected") {
-        alert("Login failed");
-      }
-    });
+    setLoading(true);
+    setError("");
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Logged in successfully");
+      navigate("/Home");
+    } catch (err) {
+      setError("Failed to log in. Please check your credentials.");
+      setEmail("");
+      setPassword("");
+      console.log(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,25 +78,21 @@ const LogIn = () => {
             label="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            InputLabelProps={{
-              style: { color: "white" },
-            }}
-            InputProps={{
-              style: { color: "white" },
-            }}
+            InputLabelProps={{ style: { color: "white" } }}
+            InputProps={{ style: { color: "white" } }}
             sx={{
               "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
                 borderColor: "white",
               },
-              "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
-              },
-              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
-              },
-              "& .MuiInputBase-input": {
-                color: "white",
-              },
+              "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "white",
+                },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "white",
+                },
+              "& .MuiInputBase-input": { color: "white" },
             }}
           />
           <TextField
@@ -101,33 +103,39 @@ const LogIn = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            InputLabelProps={{
-              style: { color: "white" },
-            }}
-            InputProps={{
-              style: { color: "white" },
-            }}
+            InputLabelProps={{ style: { color: "white" } }}
+            InputProps={{ style: { color: "white" } }}
             sx={{
               "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
                 borderColor: "white",
               },
-              "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
-              },
-              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "white",
-              },
-              "& .MuiInputBase-input": {
-                color: "white",
-              },
+              "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "white",
+                },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "white",
+                },
+              "& .MuiInputBase-input": { color: "white" },
             }}
           />
+
+          {/* Error Message */}
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
+
           <Typography variant="body2" color="white" sx={{ mt: 2, mb: 2 }}>
-            Don't have an account{" "}
-            <Link to='/Register' underline="hover" color="primary">
+            Don't have an account?{" "}
+            <Link to="/Register" style={{ color: "lightblue" }}>
               Register
             </Link>
           </Typography>
+
+          {/* Sign In Button */}
           <Button
             type="submit"
             fullWidth
@@ -138,7 +146,6 @@ const LogIn = () => {
           >
             {loading ? "Logging in..." : "Sign In"}
           </Button>
-          {error && <Typography color="error">{error}</Typography>}
         </Container>
       </Box>
     </div>
