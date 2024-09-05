@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-// import { addRoom } from "../Redux/roomsSlice";
+import { addRoom } from "../Redux/roomsSlice";
 import { Dialog, DialogTitle, DialogContent, TextField, Button, MenuItem } from "@mui/material";
 
 const RoomForm = ({ open, handleClose }) => {
