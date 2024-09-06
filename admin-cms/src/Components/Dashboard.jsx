@@ -88,7 +88,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <RoomLi
+      <RoomList/>
 
       {/* Floating Action Button */}
       <Fab
