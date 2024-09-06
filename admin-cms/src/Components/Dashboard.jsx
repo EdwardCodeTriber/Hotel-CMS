@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import {
   AppBar,
+  Avatar,
   Toolbar,
   IconButton,
   Typography,
   TextField,
   Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   Button,
 } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddIcon from "@mui/icons-material/Add";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import RoomForm from "./RoomForm"; 
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
@@ -25,7 +25,6 @@ const Dashboard = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    // Track the logged-in user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
@@ -57,11 +56,10 @@ const Dashboard = () => {
 
   return (
     <div>
-      {/* AppBar with Logo and Profile Icon */}
-      <AppBar position="static">
+      <AppBar position="static" sx={{background:"grey"}}>
         <Toolbar>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Logo
+          <Avatar alt="Logo" src="/Logo.png" sx={{ width: 50, height: 50 }} />
           </Typography>
           <div style={{ display: "flex", alignItems: "center" }}>
             {user && (
@@ -72,9 +70,9 @@ const Dashboard = () => {
             <IconButton edge="end" color="inherit">
               <AccountCircleIcon />
             </IconButton>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
+            <IconButton color="inherit" onClick={handleLogout}>
+              <LogoutIcon/>
+            </IconButton>
           </div>
         </Toolbar>
       </AppBar>
@@ -100,14 +98,8 @@ const Dashboard = () => {
         <AddIcon />
       </Fab>
 
-      {/* Dialog Popup for Added Rooms */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Added Rooms</DialogTitle>
-        <DialogContent>
-          {/* Add content for added rooms here */}
-          <Typography>Here you can display added rooms details.</Typography>
-        </DialogContent>
-      </Dialog>
+      {/* RoomForm Component */}
+      <RoomForm open={open} onClose={handleClose} />
     </div>
   );
 };

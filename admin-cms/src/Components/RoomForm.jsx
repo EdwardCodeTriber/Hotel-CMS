@@ -8,10 +8,12 @@ import {
   MenuItem,
   InputLabel,
   Select,
-  FormControl
+  FormControl,
+  CircularProgress,
 } from "@mui/material";
-import { db } from "./Firebase/firebase"; 
+import { db, storage } from "../Firebase/firebase"; 
 import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const RoomForm = ({ open, onClose }) => {
   const [roomType, setRoomType] = useState("");
@@ -19,22 +21,59 @@ const RoomForm = ({ open, onClose }) => {
   const [price, setPrice] = useState("");
   const [availability, setAvailability] = useState("");
   const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setUploading(true);
 
     try {
+      let imageUrl = "";
+      if (image) {
+        // Upload image to Firebase Storage
+        const storageRef = ref(storage, `rooms/${image.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+
+        // Wait for the image to upload
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            null,
+            (error) => reject(error),
+            () => {
+              // Get the download URL of the uploaded image
+              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                imageUrl = downloadURL;
+                resolve();
+              });
+            }
+          );
+        });
+      }
+
+      // Save room details along with image to Firestore
       await addDoc(collection(db, "rooms"), {
         roomType,
         capacity,
         price,
         availability,
         description,
+        imageUrl, 
       });
+
       alert("Room added successfully");
       onClose();
     } catch (error) {
       console.error("Error adding room: ", error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -92,7 +131,22 @@ const RoomForm = ({ open, onClose }) => {
             onChange={(e) => setDescription(e.target.value)}
             required
           />
-          <Button type="submit" variant="contained" color="primary" fullWidth>
+          <Button variant="contained" component="label" fullWidth>
+            Upload Room Picture
+            <input type="file" hidden onChange={handleImageChange} />
+          </Button>
+
+          {/* Display a progress indicator when uploading */}
+          {uploading && <CircularProgress style={{ marginTop: 16, justifyContent:"center" }} />}
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            style={{ marginTop: 16 }}
+            disabled={uploading}
+          >
             Submit
           </Button>
         </form>
