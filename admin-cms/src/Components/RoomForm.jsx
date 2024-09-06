@@ -11,7 +11,7 @@ import {
   FormControl,
   CircularProgress,
 } from "@mui/material";
-import { db, storage } from "../Firebase/firebase"; 
+import { db, storage } from "../Firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
@@ -65,10 +65,15 @@ const RoomForm = ({ open, onClose }) => {
         price,
         availability,
         description,
-        imageUrl, 
+        imageUrl,
       });
 
       alert("Room added successfully");
+      setRoomType("");
+      setCapacity("");
+      setPrice("");
+      setAvailability("");
+      setDescription("");
       onClose();
     } catch (error) {
       console.error("Error adding room: ", error);
@@ -137,7 +142,11 @@ const RoomForm = ({ open, onClose }) => {
           </Button>
 
           {/* Display a progress indicator when uploading */}
-          {uploading && <CircularProgress style={{ marginTop: 16, justifyContent:"center" }} />}
+          {uploading && (
+            <CircularProgress
+              style={{ marginTop: 16, justifyContent: "center" }}
+            />
+          )}
 
           <Button
             type="submit"
