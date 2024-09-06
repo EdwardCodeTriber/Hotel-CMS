@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -14,7 +13,6 @@ import { auth } from "../Firebase/firebase";
 import picture from "../assets/outdoor.jpg";
 
 const LogIn = () => {
-  
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +27,7 @@ const LogIn = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       alert("Logged in successfully");
-      navigate("/Home");
+      navigate("/Dashboard");
     } catch (err) {
       setError("Failed to log in. Please check your credentials.");
       setEmail("");
@@ -69,7 +67,7 @@ const LogIn = () => {
 
           {/* Login Form */}
           <Typography component="h1" variant="h5" color="white" sx={{ mb: 3 }}>
-            Login
+            Admin Login
           </Typography>
           <TextField
             variant="outlined"
@@ -127,13 +125,6 @@ const LogIn = () => {
               {error}
             </Typography>
           )}
-
-          <Typography variant="body2" color="white" sx={{ mt: 2, mb: 2 }}>
-            Don't have an account?{" "}
-            <Link to="/Register" style={{ color: "lightblue" }}>
-              Register
-            </Link>
-          </Typography>
 
           {/* Sign In Button */}
           <Button

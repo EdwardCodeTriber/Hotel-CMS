@@ -1,11 +1,42 @@
-import React, { useState } from "react";
-import { AppBar, Toolbar, IconButton, Typography, TextField, Fab, Dialog, DialogTitle, DialogContent } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  TextField,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Button,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddIcon from "@mui/icons-material/Add";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  const auth = getAuth();
+
+  useEffect(() => {
+    // Track the logged-in user
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+        navigate("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth, navigate]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -13,6 +44,15 @@ const Dashboard = () => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
   };
 
   return (
@@ -23,9 +63,19 @@ const Dashboard = () => {
           <Typography variant="h6" style={{ flexGrow: 1 }}>
             Logo
           </Typography>
-          <IconButton edge="end" color="inherit">
-            <AccountCircleIcon />
-          </IconButton>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {user && (
+              <Typography variant="body1" style={{ marginRight: 16 }}>
+                {user.email}
+              </Typography>
+            )}
+            <IconButton edge="end" color="inherit">
+              <AccountCircleIcon />
+            </IconButton>
+            <Button color="inherit" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </Toolbar>
       </AppBar>
 
@@ -33,11 +83,9 @@ const Dashboard = () => {
       <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
         <TextField
           variant="outlined"
-          placeholder="Placeholder"
+          placeholder="Search"
           InputProps={{
-            startAdornment: (
-              <SearchIcon style={{ marginRight: 8 }} />
-            ),
+            startAdornment: <SearchIcon style={{ marginRight: 8 }} />,
           }}
         />
       </div>
