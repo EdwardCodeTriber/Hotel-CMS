@@ -1,65 +1,101 @@
 import React, { useState } from "react";
-import { TextField, Button, Dialog, DialogTitle, DialogContent, Rating, Box } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  Button,
+  MenuItem,
+  InputLabel,
+  Select,
+  FormControl
+} from "@mui/material";
+import { db } from "./Firebase/firebase"; 
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../Firebase/firebase";
 
-const RoomForm = ({ open, handleClose }) => {
-  const [roomName, setRoomName] = useState("");
-  const [description, setDescription] = useState("");
+const RoomForm = ({ open, onClose }) => {
+  const [roomType, setRoomType] = useState("");
+  const [capacity, setCapacity] = useState("");
   const [price, setPrice] = useState("");
-  const [starRating, setStarRating] = useState(0);
-  const [roomImage, setRoomImage] = useState(null);
+  const [availability, setAvailability] = useState("");
+  const [description, setDescription] = useState("");
 
-  const handleImageUpload = async (file) => {
-    const storageRef = ref(storage, `rooms/${file.name}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-  };
-
-  const handleSubmit = async () => {
-    if (!roomName || !description || !price || !starRating || !roomImage) {
-      alert("Please fill out all fields.");
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      const imageUrl = await handleImageUpload(roomImage);
-
       await addDoc(collection(db, "rooms"), {
-        roomName,
+        roomType,
+        capacity,
+        price,
+        availability,
         description,
-        price: Number(price),
-        starRating,
-        imageUrl,
       });
-
-      alert("Room added successfully!");
-      handleClose();
+      alert("Room added successfully");
+      onClose();
     } catch (error) {
       console.error("Error adding room: ", error);
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={open} onClose={onClose}>
       <DialogTitle>Add a New Room</DialogTitle>
       <DialogContent>
-        <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField label="Room Name" value={roomName} onChange={(e) => setRoomName(e.target.value)} fullWidth />
-          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth />
-          <TextField label="Price" value={price} onChange={(e) => setPrice(e.target.value)} fullWidth type="number" />
-          <input type="file" accept="image/*" onChange={(e) => setRoomImage(e.target.files[0])} />
-          <Rating
-            value={starRating}
-            onChange={(event, newValue) => setStarRating(newValue)}
-            precision={1}
-            max={5}
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Room Type"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={roomType}
+            onChange={(e) => setRoomType(e.target.value)}
+            required
           />
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
+          <TextField
+            label="Capacity"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={capacity}
+            onChange={(e) => setCapacity(e.target.value)}
+            required
+          />
+          <TextField
+            label="Price"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Availability</InputLabel>
+            <Select
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+              required
+            >
+              <MenuItem value="Available">Available</MenuItem>
+              <MenuItem value="Unavailable">Unavailable</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            margin="normal"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="contained" color="primary" fullWidth>
             Submit
           </Button>
-        </Box>
+        </form>
       </DialogContent>
     </Dialog>
   );
