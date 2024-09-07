@@ -9,11 +9,9 @@ import {
   InputLabel,
   Select,
   FormControl,
-  CircularProgress,
 } from "@mui/material";
-import { db, storage } from "../Firebase/firebase";
+import { db } from "../Firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const RoomForm = ({ open, onClose }) => {
   const [roomType, setRoomType] = useState("");
@@ -21,12 +19,18 @@ const RoomForm = ({ open, onClose }) => {
   const [price, setPrice] = useState("");
   const [availability, setAvailability] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
+  const [imageBase64, setImageBase64] = useState(null); 
   const [uploading, setUploading] = useState(false);
 
+  // Handle image selection and convert to base64
   const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageBase64(reader.result); 
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -35,37 +39,14 @@ const RoomForm = ({ open, onClose }) => {
     setUploading(true);
 
     try {
-      let imageUrl = "";
-      if (image) {
-        // Upload image to Firebase Storage
-        const storageRef = ref(storage, `rooms/${image.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, image);
-
-        // Wait for the image to upload
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            null,
-            (error) => reject(error),
-            () => {
-              // Get the download URL of the uploaded image
-              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                imageUrl = downloadURL;
-                resolve();
-              });
-            }
-          );
-        });
-      }
-
-      // Save room details along with image to Firestore
+      // Save room details along with base64 image to Firestore
       await addDoc(collection(db, "rooms"), {
         roomType,
         capacity,
         price,
         availability,
         description,
-        imageUrl,
+        imageBase64, 
       });
 
       alert("Room added successfully");
@@ -74,6 +55,7 @@ const RoomForm = ({ open, onClose }) => {
       setPrice("");
       setAvailability("");
       setDescription("");
+      setImageBase64(null); 
       onClose();
     } catch (error) {
       console.error("Error adding room: ", error);
@@ -141,10 +123,12 @@ const RoomForm = ({ open, onClose }) => {
             <input type="file" hidden onChange={handleImageChange} />
           </Button>
 
-          {/* Display a progress indicator when uploading */}
-          {uploading && (
-            <CircularProgress
-              style={{ marginTop: 16, justifyContent: "center" }}
+          {/* Show preview of the selected image */}
+          {imageBase64 && (
+            <img
+              src={imageBase64}
+              alt="Room Preview"
+              style={{ width: "100%", marginTop: 16 }}
             />
           )}
 

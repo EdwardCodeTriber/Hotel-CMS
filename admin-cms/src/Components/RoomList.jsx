@@ -105,11 +105,11 @@ const RoomList = () => {
         {rooms.map((room) => (
           <Grid item xs={12} sm={6} md={4} key={room.id}>
             <Card>
-              {room.imageUrl && (
+              {room.imageBase64 && (
                 <CardMedia
                   component="img"
                   height="140"
-                  image={room.imageUrl}
+                  image={room.imageBase64}
                   alt={room.roomType}
                 />
               )}
