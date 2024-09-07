@@ -10,6 +10,7 @@ import {
   Button,
   Box,
 } from "@mui/material";
+import picture from "../assets/outdoor.jpg";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -63,6 +64,7 @@ const Dashboard = () => {
           backgroundSize: "cover",
           backgroundPosition: "center",
           height: "100%",
+          
         }}>
       <AppBar position="static" sx={{background:"grey"}}>
         <Toolbar>
