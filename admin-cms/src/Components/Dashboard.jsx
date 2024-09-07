@@ -8,6 +8,7 @@ import {
   TextField,
   Fab,
   Button,
+  Box,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SearchIcon from "@mui/icons-material/Search";
@@ -16,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import RoomForm from "./RoomForm"; 
+import RoomList from './RoomList'
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
@@ -56,6 +58,12 @@ const Dashboard = () => {
 
   return (
     <div>
+      <Box sx={{
+          backgroundImage: `url(${picture})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          height: "100%",
+        }}>
       <AppBar position="static" sx={{background:"grey"}}>
         <Toolbar>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
@@ -87,7 +95,7 @@ const Dashboard = () => {
           }}
         />
       </div>
-
+      {/* Room List Display */}
       <RoomList/>
 
       {/* Floating Action Button */}
@@ -102,6 +110,7 @@ const Dashboard = () => {
 
       {/* RoomForm Component */}
       <RoomForm open={open} onClose={handleClose} />
+      </Box>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../Firebase/firebase"; 
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../Firebase/firebase"; // Firestore instance
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import {
   Card,
   CardContent,
@@ -8,11 +8,18 @@ import {
   Typography,
   Button,
   Grid,
+  Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
 } from "@mui/material";
 
 const RoomList = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
 
   // Fetch rooms from Firestore
   const fetchRooms = async () => {
@@ -34,14 +41,44 @@ const RoomList = () => {
     fetchRooms();
   }, []);
 
-  // Handle delete room
-  const handleDelete = async (id) => {
+  // Handle availability toggle
+  const toggleAvailability = async (id, currentStatus) => {
     try {
-      await deleteDoc(doc(db, "rooms", id));
-      alert("Room deleted successfully");
-      setRooms(rooms.filter((room) => room.id !== id));
+      const roomRef = doc(db, "rooms", id);
+      await updateDoc(roomRef, { availability: currentStatus === "Available" ? "Unavailable" : "Available" });
+      fetchRooms(); // refresh the room list
     } catch (error) {
-      console.error("Error deleting room: ", error);
+      console.error("Error updating availability: ", error);
+    }
+  };
+
+  // Handle open edit dialog
+  const openEditRoomDialog = (room) => {
+    setSelectedRoom(room);
+    setOpenEditDialog(true);
+  };
+
+  // Handle close edit dialog
+  const closeEditRoomDialog = () => {
+    setOpenEditDialog(false);
+    setSelectedRoom(null);
+  };
+
+  // Handle room edit submit
+  const handleEditRoom = async (e) => {
+    e.preventDefault();
+    try {
+      const roomRef = doc(db, "rooms", selectedRoom.id);
+      await updateDoc(roomRef, {
+        roomType: selectedRoom.roomType,
+        price: selectedRoom.price,
+        capacity: selectedRoom.capacity,
+        description: selectedRoom.description,
+      });
+      fetchRooms(); // refresh room list after edit
+      closeEditRoomDialog();
+    } catch (error) {
+      console.error("Error updating room: ", error);
     }
   };
 
@@ -50,47 +87,114 @@ const RoomList = () => {
   }
 
   return (
-    <Grid container spacing={3} style={{ padding: "20px" }}>
-      {rooms.map((room) => (
-        <Grid item xs={12} sm={6} md={4} key={room.id}>
-          <Card>
-            {room.imageUrl && (
-              <CardMedia
-                component="img"
-                height="140"
-                image={room.imageUrl}
-                alt={room.roomType}
-              />
-            )}
-            <CardContent>
-              <Typography variant="h5">{room.roomType}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                Capacity: {room.capacity}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Price: ${room.price}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Availability: {room.availability}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {room.description}
-              </Typography>
+    <div>
+      {/* Display rooms in a grid */}
+      <Grid container spacing={3} style={{ padding: "20px" }}>
+        {rooms.map((room) => (
+          <Grid item xs={12} sm={6} md={4} key={room.id}>
+            <Card>
+              {room.imageUrl && (
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={room.imageUrl}
+                  alt={room.roomType}
+                />
+              )}
+              <CardContent>
+                <Typography variant="h5">{room.roomType}</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Capacity: {room.capacity}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Price: ${room.price}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Availability: {room.availability}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {room.description}
+                </Typography>
 
-              {/* Delete Button */}
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => handleDelete(room.id)}
-                style={{ marginTop: 10 }}
-              >
-                Delete
+                {/* Toggle availability */}
+                <div style={{ marginTop: 10 }}>
+                  <Switch
+                    checked={room.availability === "Available"}
+                    onChange={() => toggleAvailability(room.id, room.availability)}
+                    color="primary"
+                  />
+                  <Typography variant="body2">
+                    {room.availability === "Available" ? "Available" : "Unavailable"}
+                  </Typography>
+                </div>
+
+                {/* Edit Button */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{ marginTop: 10 }}
+                  onClick={() => openEditRoomDialog(room)}
+                >
+                  Edit
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Edit Room Dialog */}
+      <Dialog open={openEditDialog} onClose={closeEditRoomDialog}>
+        <DialogTitle>Edit Room</DialogTitle>
+        <DialogContent>
+          {selectedRoom && (
+            <form onSubmit={handleEditRoom}>
+              <TextField
+                label="Room Type"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={selectedRoom.roomType}
+                onChange={(e) => setSelectedRoom({ ...selectedRoom, roomType: e.target.value })}
+                required
+              />
+              <TextField
+                label="Capacity"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={selectedRoom.capacity}
+                onChange={(e) => setSelectedRoom({ ...selectedRoom, capacity: e.target.value })}
+                required
+              />
+              <TextField
+                label="Price"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={selectedRoom.price}
+                onChange={(e) => setSelectedRoom({ ...selectedRoom, price: e.target.value })}
+                required
+              />
+              <TextField
+                label="Description"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                value={selectedRoom.description}
+                onChange={(e) => setSelectedRoom({ ...selectedRoom, description: e.target.value })}
+                required
+              />
+              <Button type="submit" variant="contained" color="primary" fullWidth>
+                Save Changes
               </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
