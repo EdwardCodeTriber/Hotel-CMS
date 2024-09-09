@@ -5,7 +5,6 @@ import LogIn from "./Components/LogIn";
 import RoomForm from "./Components/RoomForm";
 import RoomList from "./Components/RoomList";
 import BookingsList from "./Components/BookingsList";
-// import LoginAdmin from "./Components/LoginAdmin";
 
 function App() {
   return (
@@ -16,7 +15,7 @@ function App() {
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/RoomForm" element={<RoomForm/>}/>
           <Route path="/RoomList" element={<RoomList/>}/>
-          <Route path="/BookinsList" element={<BookingsList/>}/>
+          <Route path="/BookingsList" element={<BookingsList/>}/>
         </Routes>
       </BrowserRouter>
       {/* <Dashboard/> */}

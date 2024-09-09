@@ -9,16 +9,20 @@ import {
   Box,
 } from "@mui/material";
 import { db } from "../Firebase/firebase";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, doc, deleteDoc, query, where } from "firebase/firestore";
+// import { sendEmailNotification } from "../utils/notifications";
 
 const BookingsList = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch bookings from Firestore
-  const fetchBookings = async () => {
+  // Fetch pending bookings from Firestore
+  const fetchPendingBookings = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "bookings"));
+      const bookingsRef = collection(db, "bookings");
+      // Query to get only pending bookings
+      const q = query(bookingsRef, where("status", "==", "Pending"));
+      const querySnapshot = await getDocs(q);
       const bookingData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -32,24 +36,40 @@ const BookingsList = () => {
   };
 
   useEffect(() => {
-    fetchBookings();
+    fetchPendingBookings();
   }, []);
 
-  // Approve or disapprove a booking
-  const toggleApproval = async (id, currentStatus) => {
+  // Approve the booking
+  const approveBooking = async (id, userEmail) => {
     try {
       const bookingRef = doc(db, "bookings", id);
-      await updateDoc(bookingRef, {
-        status: currentStatus === "Pending" ? "Approved" : "Pending",
-      });
-      fetchBookings();
+      await updateDoc(bookingRef, { status: "Approved" });
+      // Optionally send notification to the user about approval
+    //   sendEmailNotification(userEmail, "Your booking has been approved.");
+      // Refresh the booking list
+      fetchPendingBookings();
     } catch (error) {
-      console.error("Error updating booking status: ", error);
+      console.error("Error approving booking: ", error);
+    }
+  };
+
+  // Cancel the booking
+  const cancelBooking = async (id, userEmail) => {
+    try {
+      const bookingRef = doc(db, "bookings", id);
+      
+      await deleteDoc(bookingRef);
+      // Optionally send notification to the user about the cancellation
+    //   sendEmailNotification(userEmail, "Your booking has been canceled.");
+      // Refresh the booking list
+      fetchPendingBookings();
+    } catch (error) {
+      console.error("Error canceling booking: ", error);
     }
   };
 
   if (loading) {
-    return <Typography>Loading bookings...</Typography>;
+    return <Typography>Loading pending bookings...</Typography>;
   }
 
   return (
@@ -64,35 +84,31 @@ const BookingsList = () => {
                   Booked by: {booking.email}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Booking Date: {booking.timestamp}
+                  Checking Date: {booking.checkInDate}
+                  Check out Date: {booking.checkOutDate}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Status: {booking.status}
                 </Typography>
 
-                {/* Toggle booking approval */}
-                <div style={{ marginTop: 10 }}>
-                  <Switch
-                    checked={booking.status === "Approved"}
-                    onChange={() => toggleApproval(booking.id, booking.status)}
-                    color="primary"
-                  />
-                  <Typography variant="body2">
-                    {booking.status === "Approved" ? "Approved" : "Pending"}
-                  </Typography>
-                </div>
+                {/* Approve Booking Button */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => approveBooking(booking.id, booking.email)}
+                  style={{ marginRight: 10 }}
+                >
+                  Approve
+                </Button>
 
-                {/* Approve / Disapprove Buttons */}
-                <div style={{ marginTop: 10 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => toggleApproval(booking.id, booking.status)}
-                    style={{ marginRight: 10 }}
-                  >
-                    {booking.status === "Approved" ? "Disapprove" : "Approve"}
-                  </Button>
-                </div>
+                {/* Cancel Booking Button */}
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => cancelBooking(booking.id, booking.email)}
+                >
+                  Cancel
+                </Button>
               </CardContent>
             </Card>
           </Grid>
