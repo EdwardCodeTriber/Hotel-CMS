@@ -2,7 +2,7 @@
 ## Admin CMS
 This app is made to monitor Users who book rooms on the hotel-app
 
-w## hat to Install before Running the project
+## What to Install before Running the project
 ## Copy and paste in terminal to run node modules
 - npm react-router-dom firebase
 - npm @mui/material @emotion/styled @emotion/react @mui/icons-material
