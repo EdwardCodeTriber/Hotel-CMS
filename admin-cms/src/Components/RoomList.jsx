@@ -13,7 +13,8 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
-  DialogActions, 
+  DialogActions,
+  Input
 } from "@mui/material";
 
 const RoomList = () => {
@@ -86,11 +87,26 @@ const RoomList = () => {
         price: selectedRoom.price,
         capacity: selectedRoom.capacity,
         description: selectedRoom.description,
+        imageBase64: selectedRoom.imageBase64
       });
       fetchRooms(); 
       closeEditRoomDialog();
     } catch (error) {
       console.error("Error updating room: ", error);
+    }
+  };
+
+  // Handle image upload and convert to base64
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      setSelectedRoom({ ...selectedRoom, imageBase64: reader.result });
+    };
+
+    if (file) {
+      reader.readAsDataURL(file); 
     }
   };
 
@@ -119,7 +135,7 @@ const RoomList = () => {
                   Capacity: {room.capacity}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Price: ${room.price}
+                  Price: R{room.price}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Availability: {room.availability}
@@ -209,6 +225,15 @@ const RoomList = () => {
                 onChange={(e) => setSelectedRoom({ ...selectedRoom, description: e.target.value })}
                 required
               />
+              
+              {/* Image Upload Input */}
+              <Input
+                accept="image/*"
+                type="file"
+                onChange={handleImageUpload}
+                style={{ marginTop: 10 }}
+              />
+              
               <DialogActions>
                 {/* Cancel Button */}
                 <Button

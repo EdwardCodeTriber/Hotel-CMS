@@ -19,6 +19,7 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import RoomForm from "./RoomForm"; 
 import RoomList from './RoomList'
+import BookingsList from "./BookingsList";
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
@@ -57,6 +58,10 @@ const Dashboard = () => {
     }
   };
 
+  const bookings = () =>{
+    navigate("/BookingsList")
+  }
+
   return (
     <div>
       <Box sx={{
@@ -77,6 +82,7 @@ const Dashboard = () => {
                 {user.email}
               </Typography>
             )}
+            <Button color="inherit" onClick={bookings}>Bookings</Button>
             <IconButton edge="end" color="inherit">
               <AccountCircleIcon />
             </IconButton>
@@ -99,6 +105,9 @@ const Dashboard = () => {
       </div>
       {/* Room List Display */}
       <RoomList/>
+
+      {/* Bookings List  */}
+      {/* <BookingsList/> */}
 
       {/* Floating Action Button */}
       <Fab
