@@ -1,6 +1,9 @@
 ## Hotel Central Managment System
 ## Admin CMS
 This app is made to monitor Users who book rooms on the hotel-app
+## Login credetials
+- email - admi2@gmail.com
+- password - 123456
 ## what to Install before Running the project
 ## Copy and paste in terminal to run node modules
 
