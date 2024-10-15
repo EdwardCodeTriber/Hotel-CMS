@@ -5,6 +5,8 @@ import LogIn from "./Components/LogIn";
 import RoomForm from "./Components/RoomForm";
 import RoomList from "./Components/RoomList";
 import BookingsList from "./Components/BookingsList";
+import AccommodationForm from "./Components/AccommodationForm";
+import AccommodationList from "./Components/AccommodationList";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/RoomForm" element={<RoomForm/>}/>
           <Route path="/RoomList" element={<RoomList/>}/>
           <Route path="/BookingsList" element={<BookingsList/>}/>
+          <Route path="/AccommodationForm" element={<AccommodationForm/>}/> 
+          <Route path="/AccommodationList" element={<AccommodationList/>}/>
         </Routes>
       </BrowserRouter>
       {/* <Dashboard/> */}
